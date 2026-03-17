@@ -1,36 +1,36 @@
 import java.util.*;
 
-public class w1 {
-    static class InventoryManager {
-        Map<String, Integer> stock = new HashMap<>();
-        Map<String, Queue<Integer>> wait = new HashMap<>();
+public class w1{
+    static class Entry {
+        String ip;
+        long expiry;
 
-        void addProduct(String id, int count) {
-            stock.put(id, count);
-            wait.put(id, new LinkedList<>());
-        }
-
-        synchronized String purchase(String id, int user) {
-            int s = stock.getOrDefault(id, 0);
-            if (s > 0) {
-                stock.put(id, s - 1);
-                return "Success";
-            } else {
-                wait.get(id).offer(user);
-                return "Waitlist";
-            }
-        }
-
-        int check(String id) {
-            return stock.getOrDefault(id, 0);
+        Entry(String ip, long ttl) {
+            this.ip = ip;
+            this.expiry = System.currentTimeMillis() + ttl;
         }
     }
 
+    Map<String, Entry> map = new HashMap<>();
+    int hits = 0, misses = 0;
+
+    String resolve(String domain) {
+        if (map.containsKey(domain)) {
+            Entry e = map.get(domain);
+            if (System.currentTimeMillis() < e.expiry) {
+                hits++;
+                return e.ip;
+            }
+        }
+        misses++;
+        String ip = "1.1.1." + new Random().nextInt(255);
+        map.put(domain, new Entry(ip, 3000));
+        return ip;
+    }
+
     public static void main(String[] args) {
-        InventoryManager i = new InventoryManager();
-        i.addProduct("p1", 2);
-        System.out.println(i.purchase("p1", 1));
-        System.out.println(i.purchase("p1", 2));
-        System.out.println(i.purchase("p1", 3));
+        w1 d = new w1();
+        System.out.println(d.resolve("google.com"));
+        System.out.println(d.resolve("google.com"));
     }
 }
