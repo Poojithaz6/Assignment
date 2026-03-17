@@ -2,45 +2,24 @@ import java.util.*;
 
 public class w2 {
 
-    static class Parking {
-        String[] table;
-        int size;
-
-        Parking(int n) {
-            size = n;
-            table = new String[n];
-        }
-
-        int hash(String s) {
-            return Math.abs(s.hashCode()) % size;
-        }
-
-        int park(String plate) {
-            int idx = hash(plate);
-            int start = idx;
-            while (table[idx] != null) {
-                idx = (idx + 1) % size;
-                if (idx == start) return -1;
+    static List<int[]> twoSum(int[] arr, int target) {
+        Map<Integer, Integer> map = new HashMap<>();
+        List<int[]> res = new ArrayList<>();
+        for (int i = 0; i < arr.length; i++) {
+            int comp = target - arr[i];
+            if (map.containsKey(comp)) {
+                res.add(new int[]{map.get(comp), i});
             }
-            table[idx] = plate;
-            return idx;
+            map.put(arr[i], i);
         }
-
-        void exit(String plate) {
-            int idx = hash(plate);
-            while (table[idx] != null) {
-                if (table[idx].equals(plate)) {
-                    table[idx] = null;
-                    return;
-                }
-                idx = (idx + 1) % size;
-            }
-        }
+        return res;
     }
 
     public static void main(String[] args) {
-        Parking p = new Parking(10);
-        System.out.println(p.park("ABC123"));
-        System.out.println(p.park("XYZ999"));
+        int[] arr = {500, 300, 200};
+        List<int[]> res = twoSum(arr, 500);
+        for (int[] p : res) {
+            System.out.println(p[0] + " " + p[1]);
+        }
     }
 }
