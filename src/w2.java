@@ -2,24 +2,44 @@ import java.util.*;
 
 public class w2 {
 
-    static List<int[]> twoSum(int[] arr, int target) {
-        Map<Integer, Integer> map = new HashMap<>();
-        List<int[]> res = new ArrayList<>();
-        for (int i = 0; i < arr.length; i++) {
-            int comp = target - arr[i];
-            if (map.containsKey(comp)) {
-                res.add(new int[]{map.get(comp), i});
-            }
-            map.put(arr[i], i);
+    static class LRUCache extends LinkedHashMap<String, String> {
+        int cap;
+
+        LRUCache(int cap) {
+            super(cap, 0.75f, true);
+            this.cap = cap;
         }
-        return res;
+
+        protected boolean removeEldestEntry(Map.Entry<String, String> e) {
+            return size() > cap;
+        }
+    }
+
+    static class MultiCache {
+        LRUCache l1 = new LRUCache(2);
+        Map<String, String> l2 = new HashMap<>();
+        Map<String, String> l3 = new HashMap<>();
+
+        String get(String key) {
+            if (l1.containsKey(key)) return l1.get(key);
+            if (l2.containsKey(key)) {
+                String v = l2.get(key);
+                l1.put(key, v);
+                return v;
+            }
+            if (l3.containsKey(key)) {
+                String v = l3.get(key);
+                l2.put(key, v);
+                return v;
+            }
+            return null;
+        }
     }
 
     public static void main(String[] args) {
-        int[] arr = {500, 300, 200};
-        List<int[]> res = twoSum(arr, 500);
-        for (int[] p : res) {
-            System.out.println(p[0] + " " + p[1]);
-        }
+        MultiCache m = new MultiCache();
+        m.l3.put("v1", "data1");
+        System.out.println(m.get("v1"));
+        System.out.println(m.get("v1"));
     }
 }
