@@ -2,48 +2,28 @@ import java.util.*;
 
 public class w2 {
 
-    static class TokenBucket {
-        int tokens;
-        int maxTokens;
-        long lastRefill;
-        int refillRate;
+    static class AutoComplete {
+        Map<String, Integer> map = new HashMap<>();
 
-        TokenBucket(int maxTokens, int refillRate) {
-            this.tokens = maxTokens;
-            this.maxTokens = maxTokens;
-            this.refillRate = refillRate;
-            this.lastRefill = System.currentTimeMillis();
+        void add(String query) {
+            map.put(query, map.getOrDefault(query, 0) + 1);
         }
 
-        synchronized boolean allow() {
-            long now = System.currentTimeMillis();
-            long diff = (now - lastRefill) / 1000;
-            int refill = (int) diff * refillRate;
-            if (refill > 0) {
-                tokens = Math.min(maxTokens, tokens + refill);
-                lastRefill = now;
+        List<String> search(String prefix) {
+            List<String> res = new ArrayList<>();
+            for (String q : map.keySet()) {
+                if (q.startsWith(prefix)) res.add(q);
             }
-            if (tokens > 0) {
-                tokens--;
-                return true;
-            }
-            return false;
-        }
-    }
-
-    static class RateLimiter {
-        Map<String, TokenBucket> map = new HashMap<>();
-
-        boolean check(String client) {
-            map.putIfAbsent(client, new TokenBucket(5, 1));
-            return map.get(client).allow();
+            res.sort((a, b) -> map.get(b) - map.get(a));
+            return res.subList(0, Math.min(3, res.size()));
         }
     }
 
     public static void main(String[] args) {
-        RateLimiter r = new RateLimiter();
-        for (int i = 0; i < 10; i++) {
-            System.out.println(r.check("user1"));
-        }
+        AutoComplete a = new AutoComplete();
+        a.add("java");
+        a.add("javascript");
+        a.add("java tutorial");
+        System.out.println(a.search("jav"));
     }
 }
