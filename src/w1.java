@@ -1,36 +1,29 @@
 import java.util.*;
 
 public class w1 {
-    static class Entry {
-        String ip;
-        long expiry;
+    static class Analytics {
+        Map<String, Integer> views = new HashMap<>();
+        Map<String, Set<String>> users = new HashMap<>();
+        Map<String, Integer> source = new HashMap<>();
 
-        Entry(String ip, long ttl) {
-            this.ip = ip;
-            this.expiry = System.currentTimeMillis() + ttl;
+        void process(String url, String user, String src) {
+            views.put(url, views.getOrDefault(url, 0) + 1);
+            users.putIfAbsent(url, new HashSet<>());
+            users.get(url).add(user);
+            source.put(src, source.getOrDefault(src, 0) + 1);
         }
-    }
 
-    Map<String, Entry> map = new HashMap<>();
-    int hits = 0, misses = 0;
-
-    String resolve(String domain) {
-        if (map.containsKey(domain)) {
-            Entry e = map.get(domain);
-            if (System.currentTimeMillis() < e.expiry) {
-                hits++;
-                return e.ip;
-            }
+        List<String> top() {
+            List<String> res = new ArrayList<>(views.keySet());
+            res.sort((a, b) -> views.get(b) - views.get(a));
+            return res.subList(0, Math.min(3, res.size()));
         }
-        misses++;
-        String ip = "1.1.1." + new Random().nextInt(255);
-        map.put(domain, new Entry(ip, 3000));
-        return ip;
     }
 
     public static void main(String[] args) {
-        w1 d = new w1();
-        System.out.println(d.resolve("google.com"));
-        System.out.println(d.resolve("google.com"));
+        Analytics a = new Analytics();
+        a.process("page1", "u1", "google");
+        a.process("page1", "u2", "facebook");
+        System.out.println(a.top());
     }
 }
